@@ -1,0 +1,14 @@
+# robots.txt for DevHub
+# https://yourusername.github.io/devhub
+
+User-agent: *
+Allow: /
+
+# Disallow admin/private areas if added later
+# Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://yourusername.github.io/devhub/sitemap-index.xml
+
+# Crawl-delay for polite crawling (optional)
+# Crawl-delay: 1
