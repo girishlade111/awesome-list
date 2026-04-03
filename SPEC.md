@@ -161,12 +161,12 @@
 
 ## 4. Acceptance Criteria
 
-- [ ] Home page loads with hero, search, and featured resources
-- [ ] Browse page shows all resources with working search
-- [ ] Filters (category, tags) work correctly
-- [ ] Learning Hub displays tutorials with difficulty badges
-- [ ] Submit page links to GitHub Issues
-- [ ] Responsive on mobile/tablet/desktop
-- [ ] Navigation works between all pages
-- [ ] Site builds successfully with Astro
-- [ ] GitHub Pages deployment config included
+- [x] Home page loads with hero, search, and featured resources
+- [x] Browse page shows all resources with working search
+- [x] Filters (category, tags) work correctly
+- [x] Learning Hub displays tutorials with difficulty badges
+- [x] Submit page links to GitHub Issues
+- [x] Responsive on mobile/tablet/desktop
+- [x] Navigation works between all pages
+- [x] Site builds successfully with Astro
+- [x] GitHub Pages deployment config included
