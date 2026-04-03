@@ -9,7 +9,9 @@
       "authorUrl": "https://github.com/devmaster",
       "tags": ["review", "security", "quality"],
       "url": "https://github.com/example/code-review-agent",
-      "addedAt": "2026-04-03"
+      "addedAt": "2026-04-03",
+      "stars": 342,
+      "featured": true
     },
     {
       "id": "system-prompt-engineer",
@@ -20,7 +22,9 @@
       "authorUrl": "https://github.com/promptwizard",
       "tags": ["optimization", "prompts", "engineering"],
       "url": "https://github.com/example/prompt-engineer",
-      "addedAt": "2026-04-02"
+      "addedAt": "2026-04-02",
+      "stars": 289,
+      "featured": true
     },
     {
       "id": "security-scanner-plugin",
@@ -31,7 +35,8 @@
       "authorUrl": "https://github.com/secpro",
       "tags": ["security", "scanning", "vulnerability"],
       "url": "https://github.com/example/security-scanner",
-      "addedAt": "2026-04-01"
+      "addedAt": "2026-04-01",
+      "stars": 256
     },
     {
       "id": "git-hooks-instructions",
@@ -42,7 +47,8 @@
       "authorUrl": "https://github.com/gitguru",
       "tags": ["git", "automation", "workflow"],
       "url": "https://github.com/example/git-hooks-guide",
-      "addedAt": "2026-03-30"
+      "addedAt": "2026-03-30",
+      "stars": 178
     },
     {
       "id": "refactoring-assistant",
@@ -53,7 +59,9 @@
       "authorUrl": "https://github.com/cleancode",
       "tags": ["refactoring", "modernization", "maintenance"],
       "url": "https://github.com/example/refactoring-assistant",
-      "addedAt": "2026-03-28"
+      "addedAt": "2026-03-28",
+      "stars": 421,
+      "featured": true
     },
     {
       "id": "documentation-generator",
@@ -64,7 +72,8 @@
       "authorUrl": "https://github.com/docsmith",
       "tags": ["documentation", "automation", "generator"],
       "url": "https://github.com/example/doc-generator",
-      "addedAt": "2026-03-25"
+      "addedAt": "2026-03-25",
+      "stars": 198
     },
     {
       "id": "test-generator-prompt",
@@ -75,7 +84,8 @@
       "authorUrl": "https://github.com/testmaster",
       "tags": ["testing", "unit-tests", "automation"],
       "url": "https://github.com/example/test-generator-prompt",
-      "addedAt": "2026-03-20"
+      "addedAt": "2026-03-20",
+      "stars": 367
     },
     {
       "id": "docker-setup-instructions",
@@ -86,7 +96,8 @@
       "authorUrl": "https://github.com/devopspro",
       "tags": ["docker", "devops", "setup"],
       "url": "https://github.com/example/docker-setup",
-      "addedAt": "2026-03-18"
+      "addedAt": "2026-03-18",
+      "stars": 245
     },
     {
       "id": "api-documentation-agent",
@@ -97,7 +108,8 @@
       "authorUrl": "https://github.com/apimaster",
       "tags": ["documentation", "api", "automation"],
       "url": "https://github.com/example/api-docs-agent",
-      "addedAt": "2026-03-15"
+      "addedAt": "2026-03-15",
+      "stars": 312
     },
     {
       "id": "code-optimization-prompt",
@@ -108,7 +120,8 @@
       "authorUrl": "https://github.com/speeddev",
       "tags": ["performance", "optimization", "best-practices"],
       "url": "https://github.com/example/code-optimization-prompt",
-      "addedAt": "2026-03-12"
+      "addedAt": "2026-03-12",
+      "stars": 189
     },
     {
       "id": "ci-cd-pipeline-instructions",
@@ -119,7 +132,8 @@
       "authorUrl": "https://github.com/cicdexpert",
       "tags": ["ci-cd", "automation", "deployment"],
       "url": "https://github.com/example/cicd-setup",
-      "addedAt": "2026-03-10"
+      "addedAt": "2026-03-10",
+      "stars": 276
     },
     {
       "id": "dependency-manager-plugin",
@@ -130,7 +144,8 @@
       "authorUrl": "https://github.com/pkgpro",
       "tags": ["dependencies", "automation", "security"],
       "url": "https://github.com/example/dependency-manager",
-      "addedAt": "2026-03-08"
+      "addedAt": "2026-03-08",
+      "stars": 134
     },
     {
       "id": "debugging-assistant-agent",
@@ -141,7 +156,9 @@
       "authorUrl": "https://github.com/debugking",
       "tags": ["debugging", "troubleshooting", "analysis"],
       "url": "https://github.com/example/debugging-assistant",
-      "addedAt": "2026-03-05"
+      "addedAt": "2026-03-05",
+      "stars": 445,
+      "featured": true
     },
     {
       "id": "architecture-review-prompt",
@@ -152,7 +169,8 @@
       "authorUrl": "https://github.com/archguru",
       "tags": ["architecture", "review", "scalability"],
       "url": "https://github.com/example/architecture-review",
-      "addedAt": "2026-03-01"
+      "addedAt": "2026-03-01",
+      "stars": 203
     },
     {
       "id": "kubernetes-deployment-guide",
@@ -163,7 +181,33 @@
       "authorUrl": "https://github.com/k8smaster",
       "tags": ["kubernetes", "deployment", "devops"],
       "url": "https://github.com/example/k8s-deployment",
-      "addedAt": "2026-02-25"
+      "addedAt": "2026-02-25",
+      "stars": 321
+    },
+    {
+      "id": "deployment-workflow",
+      "title": "Automated Deployment Workflow",
+      "description": "Complete workflow for automated deployment with rollback, health checks, and monitoring integration.",
+      "category": "workflow",
+      "author": "deploypro",
+      "authorUrl": "https://github.com/deploypro",
+      "tags": ["deployment", "automation", "ci-cd", "monitoring"],
+      "url": "https://github.com/example/deployment-workflow",
+      "addedAt": "2026-04-01",
+      "stars": 267
+    },
+    {
+      "id": "code-generation-workflow",
+      "title": "AI Code Generation Workflow",
+      "description": "End-to-end workflow for generating production-ready code using AI, from requirements to deployment.",
+      "category": "workflow",
+      "author": "codegenius",
+      "authorUrl": "https://github.com/codegenius",
+      "tags": ["code-generation", "ai", "automation", "productivity"],
+      "url": "https://github.com/example/code-generation-workflow",
+      "addedAt": "2026-03-22",
+      "stars": 389,
+      "featured": true
     }
   ],
   "tutorials": [
@@ -215,6 +259,26 @@
       "duration": "20 min",
       "category": "getting-started",
       "author": "communitylead",
+      "url": "#"
+    },
+    {
+      "id": "building-secure-apps",
+      "title": "Building Secure Applications",
+      "description": "Best practices for building secure applications, covering authentication, authorization, data protection, and common vulnerability prevention.",
+      "difficulty": "intermediate",
+      "duration": "40 min",
+      "category": "best-practices",
+      "author": "securityexpert",
+      "url": "#"
+    },
+    {
+      "id": "scaling-microservices",
+      "title": "Scaling Microservices Architecture",
+      "description": "Real-world case study on how a startup scaled their microservices architecture to handle millions of requests per day.",
+      "difficulty": "advanced",
+      "duration": "50 min",
+      "category": "case-studies",
+      "author": "architectpro",
       "url": "#"
     }
   ]
