@@ -4,22 +4,49 @@ import { getCollection } from 'astro:content';
 
 const tutorials = await getCollection('tutorials');
 
+// Build comprehensive search data
 const searchData = [
   ...resourcesData.resources.map(r => ({
     id: r.id,
     title: r.title,
     description: r.description,
-    type: 'resource',
+    type: 'resource' as const,
     category: r.category,
+    tags: r.tags,
+    author: r.author,
     url: `/resource/${r.id}`
   })),
   ...tutorials.map(t => ({
     id: t.id,
     title: t.data.title,
     description: t.data.description,
-    type: 'tutorial',
+    type: 'tutorial' as const,
     category: t.data.category,
+    tags: [],
+    author: t.data.author,
     url: `/learn/${t.id}`
+  })),
+  // Add tags as searchable items
+  ...[...new Set(resourcesData.resources.flatMap(r => r.tags))].map(tag => ({
+    id: `tag-${tag}`,
+    title: tag,
+    description: `Browse all resources tagged "${tag}"`,
+    type: 'tag' as const,
+    category: '',
+    tags: [tag],
+    author: '',
+    url: `/tags/${tag}`
+  })),
+  // Add categories as searchable items
+  ...['agent', 'prompt', 'instruction', 'plugin', 'workflow'].map(cat => ({
+    id: `cat-${cat}`,
+    title: cat.charAt(0).toUpperCase() + cat.slice(1),
+    description: `Browse all ${cat} resources`,
+    type: 'category' as const,
+    category: cat,
+    tags: [],
+    author: '',
+    url: `/browse?category=${cat}`
   }))
 ];
 ---
@@ -41,41 +68,64 @@ const searchData = [
           <circle cx="11" cy="11" r="8"/>
           <path d="m21 21-4.35-4.35"/>
         </svg>
-        <input 
-          type="text" 
-          id="global-search-input" 
-          placeholder="Search resources and tutorials..." 
+        <input
+          type="text"
+          id="global-search-input"
+          placeholder="Search resources, tutorials, tags..."
           autocomplete="off"
         />
         <button class="close-search" id="close-search">Esc</button>
       </div>
-      
+
       <div class="search-results" id="search-results">
         <div class="search-empty">
-          <p>No recent searches</p>
+          <p>Type to search...</p>
         </div>
       </div>
-      
+
       <div class="search-footer">
         <div class="search-hint">
           <span><kbd>↑↓</kbd> to navigate</span>
           <span><kbd>↵</kbd> to select</span>
+          <span><kbd>ESC</kbd> to close</span>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script define:vars={{ searchData }}>
+<script is:inline define:vars={{ searchData }}>
+  // Fuse.js is loaded via layout
   const trigger = document.getElementById('search-trigger');
   const overlay = document.getElementById('search-overlay');
   const input = document.getElementById('global-search-input');
   const closeBtn = document.getElementById('close-search');
   const resultsContainer = document.getElementById('search-results');
-  
+
   let isOpen = false;
   let selectedIndex = -1;
   let filteredResults = [];
+  let fuseInstance = null;
+
+  function initFuse() {
+    if (typeof Fuse !== 'undefined') {
+      fuseInstance = new Fuse(searchData, {
+        keys: [
+          { name: 'title', weight: 0.5 },
+          { name: 'description', weight: 0.2 },
+          { name: 'tags', weight: 0.2 },
+          { name: 'category', weight: 0.1 }
+        ],
+        threshold: 0.3,
+        includeMatches: true,
+        minMatchCharLength: 2
+      });
+    }
+  }
+
+  // Try to init immediately, or wait for script load
+  initFuse();
+  window.addEventListener('fuse-ready', initFuse);
 
   function openSearch() {
     isOpen = true;
@@ -103,7 +153,7 @@ const searchData = [
       e.preventDefault();
       openSearch();
     }
-    if (e.key === 'Escape' && isOpen) {
+    if ((e.key === 'Escape') && isOpen) {
       closeSearch();
     }
     if (isOpen) {
@@ -115,50 +165,92 @@ const searchData = [
         e.preventDefault();
         selectedIndex = Math.max(selectedIndex - 1, 0);
         updateSelection();
-      } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      } else if (e.key === 'Enter' && selectedIndex >= 0 && filteredResults[selectedIndex]) {
+        e.preventDefault();
         window.location.href = filteredResults[selectedIndex].url;
       }
     }
   });
 
   input.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
-    if (!query) {
+    const query = e.target.value;
+    if (!query || query.length < 2) {
       filteredResults = [];
       renderResults([]);
       return;
     }
 
-    filteredResults = searchData.filter(item => 
-      item.title.toLowerCase().includes(query) || 
-      item.description.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query)
-    ).slice(0, 8);
+    const lowerQuery = query.toLowerCase();
+
+    if (fuseInstance) {
+      // Use Fuse for fuzzy matching
+      const fuseResults = fuseInstance.search(query, { limit: 10 });
+      filteredResults = fuseResults.map(r => ({
+        ...r.item,
+        matches: r.matches
+      }));
+    } else {
+      // Fallback to simple filtering
+      filteredResults = searchData.filter(item =>
+        item.title.toLowerCase().includes(lowerQuery) ||
+        item.description.toLowerCase().includes(lowerQuery) ||
+        item.category.toLowerCase().includes(lowerQuery) ||
+        (item.tags && item.tags.some(t => t.toLowerCase().includes(lowerQuery)))
+      ).slice(0, 10);
+    }
 
     renderResults(filteredResults);
   });
 
-  function renderResults(results) {
-    selectedIndex = -1;
-    if (results.length === 0) {
-      if (input.value) {
-        resultsContainer.innerHTML = '<div class="search-empty"><p>No results found</p></div>';
-      } else {
-        resultsContainer.innerHTML = '<div class="search-empty"><p>Type to search...</p></div>';
+  function highlightText(text, matches, query) {
+    if (!matches || matches.length === 0 || !query) return text;
+    
+    // Collect all matched indices
+    const indices = new Set();
+    matches.forEach(match => {
+      if (match.indices) {
+        match.indices.forEach(([start, end]) => {
+          for (let i = start; i <= end; i++) indices.add(i);
+        });
       }
+    });
+
+    if (indices.size === 0) return text;
+
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      if (indices.has(i)) {
+        result += `<mark>${text[i]}</mark>`;
+      } else {
+        result += text[i];
+      }
+    }
+    return result;
+  }
+
+  function renderResults(results) {
+    selectedIndex = results.length > 0 ? 0 : -1;
+    
+    if (results.length === 0) {
+      const query = input.value;
+      resultsContainer.innerHTML = query 
+        ? `<div class="search-empty"><p>No results found for "${query}"</p></div>`
+        : '<div class="search-empty"><p>Type to search...</p></div>';
       return;
     }
 
+    const typeIcons = { resource: '📦', tutorial: '📚', tag: '🏷️', category: '📂' };
+    const typeLabels = { resource: 'Resource', tutorial: 'Tutorial', tag: 'Tag', category: 'Category' };
+    const query = input.value;
+
     resultsContainer.innerHTML = results.map((result, index) => `
       <a href="${result.url}" class="search-result-item ${index === selectedIndex ? 'selected' : ''}" data-index="${index}">
-        <div class="result-icon">
-          ${result.type === 'resource' ? '📦' : '📚'}
-        </div>
+        <div class="result-icon">${typeIcons[result.type] || '📄'}</div>
         <div class="result-content">
-          <div class="result-title">${result.title}</div>
-          <div class="result-desc">${result.description.substring(0, 60)}${result.description.length > 60 ? '...' : ''}</div>
+          <div class="result-title">${highlightText(result.title, result.matches, query)}</div>
+          <div class="result-desc">${result.description.substring(0, 80)}${result.description.length > 80 ? '...' : ''}</div>
         </div>
-        <div class="result-type">${result.type}</div>
+        <div class="result-type">${typeLabels[result.type] || result.type}</div>
       </a>
     `).join('');
   }
@@ -172,6 +264,15 @@ const searchData = [
       }
     });
   }
+
+  // Handle hover selection
+  resultsContainer.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.search-result-item');
+    if (item) {
+      selectedIndex = parseInt(item.dataset.index);
+      updateSelection();
+    }
+  });
 </script>
 
 <style>
@@ -253,6 +354,11 @@ const searchData = [
     border-bottom: 1px solid var(--border);
   }
 
+  .search-header svg {
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+
   .search-header input {
     flex: 1;
     background: none;
@@ -269,6 +375,7 @@ const searchData = [
     border-radius: 4px;
     color: var(--text-muted);
     font-size: 0.75rem;
+    cursor: pointer;
   }
 
   .search-results {
@@ -292,11 +399,11 @@ const searchData = [
     color: var(--text-primary);
     transition: all 0.2s ease;
     margin-bottom: 4px;
+    text-decoration: none;
   }
 
   .search-result-item:hover, .search-result-item.selected {
     background: var(--bg-elevated);
-    transform: translateX(4px);
   }
 
   .search-result-item.selected {
@@ -305,20 +412,28 @@ const searchData = [
 
   .result-icon {
     font-size: 1.5rem;
+    flex-shrink: 0;
   }
 
   .result-content {
     flex: 1;
+    min-width: 0;
   }
 
   .result-title {
     font-weight: 600;
     margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .result-desc {
     font-size: 0.8125rem;
     color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .result-type {
@@ -328,6 +443,7 @@ const searchData = [
     background: var(--bg-deep);
     padding: 2px 8px;
     border-radius: 100px;
+    flex-shrink: 0;
   }
 
   .search-footer {
@@ -351,6 +467,13 @@ const searchData = [
     margin: 0 2px;
   }
 
+  mark {
+    background: rgba(99, 102, 241, 0.3);
+    color: var(--text-primary);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+
   @media (max-width: 640px) {
     .search-trigger {
       min-width: auto;
@@ -358,14 +481,18 @@ const searchData = [
       justify-content: center;
       padding: 8px;
     }
-    
+
     .search-placeholder, .search-kbd {
       display: none;
     }
-    
+
     .search-overlay {
       padding: 16px;
       padding-top: 60px;
+    }
+
+    .search-modal {
+      max-height: calc(100vh - 120px);
     }
   }
 </style>
