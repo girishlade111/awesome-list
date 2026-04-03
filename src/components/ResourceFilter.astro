@@ -1,0 +1,667 @@
+---
+// ResourceFilter.astro - Client-side search and filtering component
+import type { Resource } from '../types';
+
+interface Props {
+  resources: Resource[];
+}
+
+const { resources } = Astro.props;
+---
+
+<div class="resource-filter" data-resources={JSON.stringify(resources)}>
+  <div class="search-bar">
+    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input
+      type="text"
+      id="resource-search"
+      placeholder="Search resources..."
+      class="search-input"
+    />
+    <button id="clear-search" class="clear-btn" style="display: none;">×</button>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label class="filter-label">Category</label>
+      <div class="filter-buttons" id="category-filters">
+        <button class="filter-btn active" data-category="">All</button>
+        <button class="filter-btn" data-category="agent">🤖 Agents</button>
+        <button class="filter-btn" data-category="prompt">💬 Prompts</button>
+        <button class="filter-btn" data-category="instruction">📋 Instructions</button>
+        <button class="filter-btn" data-category="plugin">🔌 Plugins</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-header">
+        <label class="filter-label">Tags</label>
+        <button id="toggle-tags" class="toggle-btn">Show all</button>
+      </div>
+      <div class="filter-buttons tags-container" id="tag-filters">
+        <!-- Tags will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">Sort by</label>
+      <select id="sort-select" class="sort-select">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="alpha">Alphabetical (A-Z)</option>
+        <option value="alpha-desc">Alphabetical (Z-A)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="results-info">
+    <p class="results-count"><span id="visible-count">0</span> of <span id="total-count">0</span> resources</p>
+    <div class="active-filters" id="active-filters"></div>
+  </div>
+
+  <div class="resources-grid" id="resources-grid">
+    <!-- Resources will be rendered by JavaScript -->
+  </div>
+
+  <div id="no-results" class="no-results" style="display: none;">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+      <path d="M8 11h6"/>
+    </svg>
+    <h3>No resources found</h3>
+    <p>Try adjusting your search or filters</p>
+    <button id="clear-filters" class="btn btn-secondary">Clear all filters</button>
+  </div>
+</div>
+
+<style>
+  .resource-filter {
+    width: 100%;
+  }
+
+  .search-bar {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 16px 48px 16px 48px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+  }
+
+  .clear-btn:hover {
+    background: var(--border);
+    color: var(--text-primary);
+  }
+
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+  }
+
+  .filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .toggle-btn {
+    font-size: 0.75rem;
+    color: var(--primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+  }
+
+  .toggle-btn:hover {
+    background: var(--bg-elevated);
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filter-btn {
+    padding: 8px 16px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .filter-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+
+  .tags-container {
+    max-height: 120px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .tags-container.expanded {
+    max-height: none;
+  }
+
+  .tags-container .filter-btn {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  .sort-select {
+    padding: 10px 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .sort-select:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .results-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .results-count {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .active-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .active-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .active-filter button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .active-filter button:hover {
+    color: var(--error);
+  }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+  }
+
+  .resource-item {
+    display: block;
+    padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .resource-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-glow);
+    color: inherit;
+  }
+
+  .resource-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .resource-item-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .resource-item-badge.agent { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+  .resource-item-badge.prompt { background: rgba(34, 211, 238, 0.2); color: var(--accent); }
+  .resource-item-badge.plugin { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+  .resource-item-badge.instruction { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+  .resource-item-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .resource-item h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .resource-item p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .resource-item-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .resource-item-author {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .resource-item-author a {
+    color: var(--primary);
+  }
+
+  .resource-item-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .resource-item-tag {
+    padding: 3px 8px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 64px 24px;
+  }
+
+  .no-results svg {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .no-results h3 {
+    margin-bottom: 8px;
+  }
+
+  .no-results p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 640px) {
+    .resources-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .results-info {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .filter-buttons {
+      gap: 6px;
+    }
+
+    .filter-btn {
+      font-size: 0.75rem;
+      padding: 6px 12px;
+    }
+  }
+</style>
+
+<script>
+  interface Resource {
+    id: string;
+    title: string;
+    description: string;
+    category: string;
+    author: string;
+    authorUrl: string;
+    tags: string[];
+    url: string;
+    addedAt: string;
+  }
+
+  const container = document.querySelector('.resource-filter') as HTMLElement;
+  const resources: Resource[] = JSON.parse(container.dataset.resources || '[]');
+  
+  const searchInput = document.getElementById('resource-search') as HTMLInputElement;
+  const clearSearchBtn = document.getElementById('clear-search') as HTMLButtonElement;
+  const categoryFilters = document.querySelectorAll('#category-filters .filter-btn');
+  const tagFiltersContainer = document.getElementById('tag-filters') as HTMLElement;
+  const toggleTagsBtn = document.getElementById('toggle-tags') as HTMLButtonElement;
+  const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+  const resourcesGrid = document.getElementById('resources-grid') as HTMLElement;
+  const noResults = document.getElementById('no-results') as HTMLElement;
+  const visibleCount = document.getElementById('visible-count') as HTMLSpanElement;
+  const totalCount = document.getElementById('total-count') as HTMLSpanElement;
+  const activeFiltersContainer = document.getElementById('active-filters') as HTMLElement;
+  const clearFiltersBtn = document.getElementById('clear-filters') as HTMLButtonElement;
+
+  let activeCategory = '';
+  let activeTags: string[] = [];
+  let searchQuery = '';
+  let sortBy = 'newest';
+
+  // Initialize
+  totalCount.textContent = resources.length.toString();
+  populateTagFilters();
+  renderResources();
+
+  // Event listeners
+  searchInput.addEventListener('input', handleSearch);
+  clearSearchBtn.addEventListener('click', clearSearch);
+  
+  categoryFilters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      categoryFilters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = btn.dataset.category || '';
+      renderResources();
+    });
+  });
+
+  toggleTagsBtn.addEventListener('click', () => {
+    tagFiltersContainer.classList.toggle('expanded');
+    toggleTagsBtn.textContent = tagFiltersContainer.classList.contains('expanded') ? 'Show less' : 'Show all';
+  });
+
+  sortSelect.addEventListener('change', () => {
+    sortBy = sortSelect.value;
+    renderResources();
+  });
+
+  clearFiltersBtn?.addEventListener('click', clearAllFilters);
+
+  function populateTagFilters() {
+    const allTags = [...new Set(resources.flatMap(r => r.tags))].sort();
+    tagFiltersContainer.innerHTML = allTags.map(tag => `
+      <button class="filter-btn" data-tag="${tag}">${tag}</button>
+    `).join('');
+
+    tagFiltersContainer.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag || '';
+        btn.classList.toggle('active');
+        
+        if (activeTags.includes(tag)) {
+          activeTags = activeTags.filter(t => t !== tag);
+        } else {
+          activeTags.push(tag);
+        }
+        renderResources();
+      });
+    });
+  }
+
+  function handleSearch(e: Event) {
+    const target = e.target as HTMLInputElement;
+    searchQuery = target.value.toLowerCase();
+    clearSearchBtn.style.display = searchQuery ? 'flex' : 'none';
+    renderResources();
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    searchQuery = '';
+    clearSearchBtn.style.display = 'none';
+    renderResources();
+  }
+
+  function clearAllFilters() {
+    searchInput.value = '';
+    searchQuery = '';
+    clearSearchBtn.style.display = 'none';
+    activeCategory = '';
+    activeTags = [];
+    sortBy = 'newest';
+    sortSelect.value = 'newest';
+    
+    categoryFilters.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.category === '');
+    });
+    
+    tagFiltersContainer.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    renderResources();
+  }
+
+  function filterResources() {
+    let filtered = resources;
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(r =>
+        r.title.toLowerCase().includes(searchQuery) ||
+        r.description.toLowerCase().includes(searchQuery) ||
+        r.tags.some(t => t.toLowerCase().includes(searchQuery)) ||
+        r.author.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    // Filter by category
+    if (activeCategory) {
+      filtered = filtered.filter(r => r.category === activeCategory);
+    }
+
+    // Filter by tags
+    if (activeTags.length > 0) {
+      filtered = filtered.filter(r =>
+        activeTags.some(tag => r.tags.includes(tag))
+      );
+    }
+
+    return filtered;
+  }
+
+  function sortResources(filtered: Resource[]) {
+    const sorted = [...filtered];
+    
+    switch (sortBy) {
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
+      case 'oldest':
+        return sorted.sort((a, b) => new Date(a.addedAt).getTime() - new Date(b.addedAt).getTime());
+      case 'alpha':
+        return sorted.sort((a, b) => a.title.localeCompare(b.title));
+      case 'alpha-desc':
+        return sorted.sort((a, b) => b.title.localeCompare(a.title));
+      default:
+        return sorted;
+    }
+  }
+
+  function renderResources() {
+    let filtered = filterResources();
+    filtered = sortResources(filtered);
+
+    visibleCount.textContent = filtered.length.toString();
+    renderActiveFilters();
+
+    if (filtered.length === 0) {
+      resourcesGrid.style.display = 'none';
+      noResults.style.display = 'block';
+    } else {
+      resourcesGrid.style.display = 'grid';
+      noResults.style.display = 'none';
+
+      resourcesGrid.innerHTML = filtered.map(resource => `
+        <a href="/resources/${resource.id}" class="resource-item">
+          <div class="resource-item-header">
+            <span class="resource-item-badge ${resource.category}">${resource.category}</span>
+            <span class="resource-item-date">${resource.addedAt}</span>
+          </div>
+          <h3>${resource.title}</h3>
+          <p>${resource.description}</p>
+          <div class="resource-item-meta">
+            <span class="resource-item-author">by <a href="${resource.authorUrl}" target="_blank" rel="noopener">${resource.author}</a></span>
+            <div class="resource-item-tags">
+              ${resource.tags.slice(0, 3).map(tag => `<span class="resource-item-tag">${tag}</span>`).join('')}
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+  }
+
+  function renderActiveFilters() {
+    const filters: string[] = [];
+
+    if (activeCategory) {
+      const categoryLabels: Record<string, string> = {
+        agent: 'Agents',
+        prompt: 'Prompts',
+        instruction: 'Instructions',
+        plugin: 'Plugins'
+      };
+      filters.push(`<span class="active-filter">Category: ${categoryLabels[activeCategory]} <button data-filter="category">×</button></span>`);
+    }
+
+    activeTags.forEach(tag => {
+      filters.push(`<span class="active-filter">Tag: ${tag} <button data-filter="tag-${tag}">×</button></span>`);
+    });
+
+    activeFiltersContainer.innerHTML = filters.join('');
+
+    activeFiltersContainer.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filterType = btn.dataset.filter || '';
+        if (filterType === 'category') {
+          activeCategory = '';
+          categoryFilters.forEach(b => b.classList.toggle('active', b.dataset.category === ''));
+        } else if (filterType.startsWith('tag-')) {
+          const tag = filterType.replace('tag-', '');
+          activeTags = activeTags.filter(t => t !== tag);
+          tagFiltersContainer.querySelector(`[data-tag="${tag}"]`)?.classList.remove('active');
+        }
+        renderResources();
+      });
+    });
+  }
+</script>
