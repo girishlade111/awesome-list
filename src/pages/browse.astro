@@ -2,40 +2,185 @@
 import Layout from '../layouts/Layout.astro';
 import resourcesData from '../data/resources.json';
 import ResourceFilter from '../components/ResourceFilter.astro';
+import { categories } from '../types';
+
+const totalResources = resourcesData.resources.length;
 ---
 
 <Layout title="Browse Resources">
-  <section class="browse-hero">
-    <div class="container">
-      <h1>Browse Resources</h1>
-      <p>Find the perfect agent, prompt, instruction, or plugin for your needs</p>
-    </div>
-  </section>
+  <div class="browse-container container">
+    <aside class="browse-sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Explore</h3>
+        <nav class="sidebar-nav">
+          <a href="/browse" class="sidebar-link active">
+            <span class="icon">🔍</span>
+            <span>All Resources</span>
+            <span class="count">{totalResources}</span>
+          </a>
+          <a href="/collections" class="sidebar-link">
+            <span class="icon">📚</span>
+            <span>Collections</span>
+          </a>
+          <a href="/learn" class="sidebar-link">
+            <span class="icon">🎓</span>
+            <span>Learning Hub</span>
+          </a>
+        </nav>
+      </div>
 
-  <section class="browse-content section">
-    <div class="container">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Categories</h3>
+        <nav class="sidebar-nav">
+          {categories.map(cat => (
+            <a href={`/browse?category=${cat.id}`} class="sidebar-link" data-category={cat.id}>
+              <span class="icon">{cat.icon}</span>
+              <span>{cat.label}</span>
+              <span class="count">{resourcesData.resources.filter(r => r.category === cat.id).length}</span>
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-cta">
+          <h4>Have a resource?</h4>
+          <p>Share it with the community and help others.</p>
+          <a href="/submit" class="btn btn-primary btn-sm">Submit Now</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="browse-main">
+      <header class="browse-header">
+        <h1>Directory</h1>
+        <p>Discover community-built tools and resources</p>
+      </header>
+
       <ResourceFilter resources={resourcesData.resources} />
-    </div>
-  </section>
+    </main>
+  </div>
 </Layout>
 
 <style>
-  .browse-hero {
-    padding: 80px 0 40px;
-    text-align: center;
-    background:
-      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(99, 102, 241, 0.1), transparent);
+  .browse-container {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 48px;
+    padding-top: 40px;
+    padding-bottom: 80px;
   }
 
-  .browse-hero h1 {
-    margin-bottom: 12px;
+  .browse-sidebar {
+    position: sticky;
+    top: 112px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
   }
 
-  .browse-hero p {
+  .sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sidebar-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    padding-left: 12px;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .sidebar-link:hover {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  .sidebar-link.active {
+    background: var(--bg-elevated);
+    color: var(--primary);
+  }
+
+  .sidebar-link .icon {
+    font-size: 1.125rem;
+  }
+
+  .sidebar-link .count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-deep);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+
+  .sidebar-cta {
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(34, 211, 238, 0.1));
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .sidebar-cta h4 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .sidebar-cta p {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .browse-main {
+    min-width: 0;
+  }
+
+  .browse-header {
+    margin-bottom: 32px;
+  }
+
+  .browse-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+  }
+
+  .browse-header p {
+    font-size: 1.125rem;
     color: var(--text-secondary);
   }
 
-  .browse-content {
-    min-height: 60vh;
+  @media (max-width: 1024px) {
+    .browse-container {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
+    .browse-sidebar {
+      display: none; /* Hide sidebar on smaller screens, or move to top */
+    }
   }
 </style>
