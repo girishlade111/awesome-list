@@ -1,0 +1,371 @@
+---
+import resourcesData from '../data/resources.json';
+import { getCollection } from 'astro:content';
+
+const tutorials = await getCollection('tutorials');
+
+const searchData = [
+  ...resourcesData.resources.map(r => ({
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    type: 'resource',
+    category: r.category,
+    url: `/resource/${r.id}`
+  })),
+  ...tutorials.map(t => ({
+    id: t.id,
+    title: t.data.title,
+    description: t.data.description,
+    type: 'tutorial',
+    category: t.data.category,
+    url: `/learn/${t.id}`
+  }))
+];
+---
+
+<div class="global-search" id="global-search-container">
+  <button class="search-trigger" id="search-trigger" aria-label="Search">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="m21 21-4.35-4.35"/>
+    </svg>
+    <span class="search-placeholder">Search...</span>
+    <kbd class="search-kbd">/</kbd>
+  </button>
+
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-modal">
+      <div class="search-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input 
+          type="text" 
+          id="global-search-input" 
+          placeholder="Search resources and tutorials..." 
+          autocomplete="off"
+        />
+        <button class="close-search" id="close-search">Esc</button>
+      </div>
+      
+      <div class="search-results" id="search-results">
+        <div class="search-empty">
+          <p>No recent searches</p>
+        </div>
+      </div>
+      
+      <div class="search-footer">
+        <div class="search-hint">
+          <span><kbd>↑↓</kbd> to navigate</span>
+          <span><kbd>↵</kbd> to select</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ searchData }}>
+  const trigger = document.getElementById('search-trigger');
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('global-search-input');
+  const closeBtn = document.getElementById('close-search');
+  const resultsContainer = document.getElementById('search-results');
+  
+  let isOpen = false;
+  let selectedIndex = -1;
+  let filteredResults = [];
+
+  function openSearch() {
+    isOpen = true;
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => input.focus(), 100);
+  }
+
+  function closeSearch() {
+    isOpen = false;
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    input.value = '';
+    renderResults([]);
+  }
+
+  trigger.addEventListener('click', openSearch);
+  closeBtn.addEventListener('click', closeSearch);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeSearch();
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !isOpen && document.activeElement.tagName !== 'INPUT') {
+      e.preventDefault();
+      openSearch();
+    }
+    if (e.key === 'Escape' && isOpen) {
+      closeSearch();
+    }
+    if (isOpen) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedIndex = Math.min(selectedIndex + 1, filteredResults.length - 1);
+        updateSelection();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        updateSelection();
+      } else if (e.key === 'Enter' && selectedIndex >= 0) {
+        window.location.href = filteredResults[selectedIndex].url;
+      }
+    }
+  });
+
+  input.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    if (!query) {
+      filteredResults = [];
+      renderResults([]);
+      return;
+    }
+
+    filteredResults = searchData.filter(item => 
+      item.title.toLowerCase().includes(query) || 
+      item.description.toLowerCase().includes(query) ||
+      item.category.toLowerCase().includes(query)
+    ).slice(0, 8);
+
+    renderResults(filteredResults);
+  });
+
+  function renderResults(results) {
+    selectedIndex = -1;
+    if (results.length === 0) {
+      if (input.value) {
+        resultsContainer.innerHTML = '<div class="search-empty"><p>No results found</p></div>';
+      } else {
+        resultsContainer.innerHTML = '<div class="search-empty"><p>Type to search...</p></div>';
+      }
+      return;
+    }
+
+    resultsContainer.innerHTML = results.map((result, index) => `
+      <a href="${result.url}" class="search-result-item ${index === selectedIndex ? 'selected' : ''}" data-index="${index}">
+        <div class="result-icon">
+          ${result.type === 'resource' ? '📦' : '📚'}
+        </div>
+        <div class="result-content">
+          <div class="result-title">${result.title}</div>
+          <div class="result-desc">${result.description.substring(0, 60)}${result.description.length > 60 ? '...' : ''}</div>
+        </div>
+        <div class="result-type">${result.type}</div>
+      </a>
+    `).join('');
+  }
+
+  function updateSelection() {
+    const items = resultsContainer.querySelectorAll('.search-result-item');
+    items.forEach((item, index) => {
+      item.classList.toggle('selected', index === selectedIndex);
+      if (index === selectedIndex) {
+        item.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+</script>
+
+<style>
+  .global-search {
+    position: relative;
+  }
+
+  .search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
+  }
+
+  .search-trigger:hover {
+    border-color: var(--primary);
+    color: var(--text-secondary);
+  }
+
+  .search-placeholder {
+    flex: 1;
+    text-align: left;
+  }
+
+  .search-kbd {
+    padding: 2px 6px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: inherit;
+  }
+
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 100px;
+  }
+
+  .search-overlay.active {
+    display: flex;
+  }
+
+  .search-modal {
+    width: 100%;
+    max-width: 600px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .search-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-header input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    outline: none;
+  }
+
+  .close-search {
+    padding: 4px 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+  }
+
+  .search-results {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .search-empty {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+  }
+
+  .search-result-item:hover, .search-result-item.selected {
+    background: var(--bg-elevated);
+    transform: translateX(4px);
+  }
+
+  .search-result-item.selected {
+    border-left: 3px solid var(--primary);
+  }
+
+  .result-icon {
+    font-size: 1.5rem;
+  }
+
+  .result-content {
+    flex: 1;
+  }
+
+  .result-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .result-desc {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+
+  .result-type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-deep);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+
+  .search-footer {
+    padding: 12px 16px;
+    background: var(--bg-deep);
+    border-top: 1px solid var(--border);
+  }
+
+  .search-hint {
+    display: flex;
+    gap: 16px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .search-hint kbd {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin: 0 2px;
+  }
+
+  @media (max-width: 640px) {
+    .search-trigger {
+      min-width: auto;
+      width: 40px;
+      justify-content: center;
+      padding: 8px;
+    }
+    
+    .search-placeholder, .search-kbd {
+      display: none;
+    }
+    
+    .search-overlay {
+      padding: 16px;
+      padding-top: 60px;
+    }
+  }
+</style>
