@@ -1,0 +1,465 @@
+---
+// CommandPalette.astro - Global search with Cmd/Ctrl+K
+---
+
+<div id="command-palette" class="command-palette" role="dialog" aria-modal="true" aria-label="Search" style="display: none;">
+  <div class="palette-backdrop" id="palette-backdrop"></div>
+  <div class="palette-panel">
+    <div class="palette-search">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input
+        type="text"
+        id="palette-input"
+        placeholder="Search resources, tutorials, tags..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <kbd class="escape-hint">ESC</kbd>
+    </div>
+    <div class="palette-results" id="palette-results">
+      <div class="palette-empty">
+        <p>Start typing to search...</p>
+      </div>
+    </div>
+    <div class="palette-footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+      <span><kbd>↵</kbd> Open</span>
+      <span><kbd>ESC</kbd> Close</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .command-palette {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+
+  .palette-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  .palette-panel {
+    position: absolute;
+    top: 20vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, calc(100vw - 32px));
+    max-height: 60vh;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: paletteIn 0.15s ease;
+  }
+
+  @keyframes paletteIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.98); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+
+  .palette-search {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  #palette-input {
+    width: 100%;
+    padding: 16px 64px 16px 48px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
+
+  #palette-input:focus {
+    outline: none;
+  }
+
+  #palette-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .escape-hint {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+  }
+
+  .palette-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .palette-empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .palette-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .palette-result:hover,
+  .palette-result.active {
+    background: var(--bg-elevated);
+  }
+
+  .result-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    font-size: 1.25rem;
+  }
+
+  .result-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .result-title {
+    font-weight: 500;
+    font-size: 0.9375rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .result-desc {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+
+  .result-type {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .palette-footer {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .palette-footer kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    margin-right: 4px;
+  }
+
+  mark {
+    background: rgba(99, 102, 241, 0.3);
+    color: var(--text-primary);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
+</style>
+
+<script>
+  import Fuse from 'fuse.js';
+
+  interface SearchItem {
+    id: string;
+    title: string;
+    description: string;
+    type: 'resource' | 'tutorial' | 'tag' | 'category';
+    url: string;
+    category?: string;
+    tags?: string[];
+  }
+
+  let searchItems: SearchItem[] = [];
+  let fuse: Fuse<SearchItem> | null = null;
+  let selectedIndex = -1;
+  let results: SearchItem[] = [];
+
+  const palette = document.getElementById('command-palette') as HTMLElement;
+  const backdrop = document.getElementById('palette-backdrop') as HTMLElement;
+  const input = document.getElementById('palette-input') as HTMLInputElement;
+  const resultsContainer = document.getElementById('palette-results') as HTMLElement;
+
+  // Load search data
+  async function loadData() {
+    try {
+      const [resourcesRes, tutorialsRes] = await Promise.all([
+        fetch('/api/search-resources.json'),
+        fetch('/api/search-tutorials.json')
+      ]);
+
+      const resourcesData = await resourcesRes.json();
+      const tutorialsData = await tutorialsRes.json();
+
+      // Collect all tags
+      const allTags = [...new Set(resourcesData.resources.flatMap((r: any) => r.tags))];
+      const allCategories = ['agent', 'prompt', 'instruction', 'plugin', 'workflow'];
+
+      searchItems = [
+        ...resourcesData.resources.map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          description: r.description,
+          type: 'resource' as const,
+          url: `/resource/${r.id}`,
+          category: r.category,
+          tags: r.tags
+        })),
+        ...tutorialsData.tutorials.map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          type: 'tutorial' as const,
+          url: `/learn/${t.id}`,
+          category: t.category,
+          tags: []
+        })),
+        ...allTags.map((tag: string) => ({
+          id: `tag-${tag}`,
+          title: tag,
+          description: `Tag: ${tag}`,
+          type: 'tag' as const,
+          url: `/tags/${tag}`,
+          tags: [tag]
+        })),
+        ...allCategories.map((cat: string) => ({
+          id: `cat-${cat}`,
+          title: cat.charAt(0).toUpperCase() + cat.slice(1),
+          description: `Category: ${cat}`,
+          type: 'category' as const,
+          url: `/browse?category=${cat}`,
+          category: cat
+        }))
+      ];
+
+      fuse = new Fuse(searchItems, {
+        keys: ['title', 'description', 'tags', 'category'],
+        threshold: 0.3,
+        includeMatches: true,
+      });
+    } catch (err) {
+      console.error('Failed to load search data:', err);
+    }
+  }
+
+  function openPalette() {
+    if (palette.style.display === 'none') {
+      palette.style.display = 'block';
+      input.value = '';
+      input.focus();
+      renderEmpty();
+    }
+  }
+
+  function closePalette() {
+    palette.style.display = 'none';
+    selectedIndex = -1;
+  }
+
+  function renderEmpty() {
+    resultsContainer.innerHTML = `
+      <div class="palette-empty">
+        <p>Start typing to search...</p>
+      </div>
+    `;
+  }
+
+  function highlightText(text: string, matches: any[]): string {
+    if (!matches || matches.length === 0) return text;
+    
+    // Get the best match indices
+    const indices = new Set<number>();
+    matches.forEach((match: any) => {
+      if (match.indices) {
+        match.indices.forEach(([start, end]: [number, number]) => {
+          for (let i = start; i <= end; i++) indices.add(i);
+        });
+      }
+    });
+
+    if (indices.size === 0) return text;
+
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      if (indices.has(i)) {
+        result += `<mark>${text[i]}</mark>`;
+      } else {
+        result += text[i];
+      }
+    }
+    return result;
+  }
+
+  function renderResults(query: string) {
+    if (!fuse || !query.trim()) {
+      renderEmpty();
+      return;
+    }
+
+    results = fuse.search(query, { limit: 10 }).map(r => r.item);
+    selectedIndex = results.length > 0 ? 0 : -1;
+
+    if (results.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="palette-empty">
+          <p>No results found for "${query}"</p>
+        </div>
+      `;
+      return;
+    }
+
+    const typeIcons: Record<string, string> = {
+      resource: '📦',
+      tutorial: '📚',
+      tag: '🏷️',
+      category: '📂'
+    };
+
+    const typeLabels: Record<string, string> = {
+      resource: 'Resource',
+      tutorial: 'Tutorial',
+      tag: 'Tag',
+      category: 'Category'
+    };
+
+    resultsContainer.innerHTML = results.map((item, index) => `
+      <a href="${item.url}" class="palette-result ${index === selectedIndex ? 'active' : ''}" data-index="${index}">
+        <div class="result-icon">${typeIcons[item.type]}</div>
+        <div class="result-content">
+          <div class="result-title">${highlightText(item.title, [])}</div>
+          <div class="result-desc">${item.description}</div>
+        </div>
+        <span class="result-type">${typeLabels[item.type]}</span>
+      </a>
+    `).join('');
+  }
+
+  function updateSelection(newIndex: number) {
+    const items = resultsContainer.querySelectorAll('.palette-result');
+    items.forEach((item, i) => {
+      item.classList.toggle('active', i === newIndex);
+    });
+    selectedIndex = newIndex;
+    
+    // Scroll into view
+    const activeItem = items[newIndex];
+    if (activeItem) {
+      activeItem.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  // Event listeners
+  document.addEventListener('keydown', (e) => {
+    // Cmd/Ctrl + K to open
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      openPalette();
+      return;
+    }
+
+    // Escape to close
+    if (e.key === 'Escape' && palette.style.display !== 'none') {
+      e.preventDefault();
+      closePalette();
+      return;
+    }
+
+    // Navigation when palette is open
+    if (palette.style.display !== 'none') {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (selectedIndex < results.length - 1) {
+          updateSelection(selectedIndex + 1);
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (selectedIndex > 0) {
+          updateSelection(selectedIndex - 1);
+        }
+      } else if (e.key === 'Enter' && selectedIndex >= 0) {
+        e.preventDefault();
+        const activeLink = resultsContainer.querySelector(`.palette-result[data-index="${selectedIndex}"]`) as HTMLAnchorElement;
+        if (activeLink) {
+          window.location.href = activeLink.href;
+        }
+      }
+    }
+  });
+
+  backdrop.addEventListener('click', closePalette);
+
+  input.addEventListener('input', (e) => {
+    const target = e.target as HTMLInputElement;
+    renderResults(target.value);
+  });
+
+  // Hover selection
+  resultsContainer.addEventListener('mouseover', (e) => {
+    const result = (e.target as HTMLElement).closest('.palette-result');
+    if (result) {
+      const index = parseInt(result.dataset.index || '0');
+      updateSelection(index);
+    }
+  });
+
+  // Initialize
+  loadData();
+</script>
