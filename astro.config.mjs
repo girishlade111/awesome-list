@@ -8,7 +8,7 @@ export default defineConfig({
   base: '/awesome-toolbox',
   output: 'static',
   build: {
-    format: 'file'
+    format: 'directory'
   },
   integrations: [mdx(), sitemap()],
   markdown: {
