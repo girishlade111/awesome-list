@@ -612,7 +612,7 @@ const { resources } = Astro.props;
       noResults.style.display = 'none';
 
       resourcesGrid.innerHTML = filtered.map(resource => `
-        <a href="/resources/${resource.id}" class="resource-item">
+        <a href="/resource/${resource.id}" class="resource-item">
           <div class="resource-item-header">
             <span class="resource-item-badge ${resource.category}">${resource.category}</span>
             <span class="resource-item-date">${resource.addedAt}</span>
@@ -620,7 +620,7 @@ const { resources } = Astro.props;
           <h3>${resource.title}</h3>
           <p>${resource.description}</p>
           <div class="resource-item-meta">
-            <span class="resource-item-author">by <a href="${resource.authorUrl}" target="_blank" rel="noopener">${resource.author}</a></span>
+            <span class="resource-item-author">by <a href="/author/${resource.author}" target="_blank" rel="noopener">${resource.author}</a></span>
             <div class="resource-item-tags">
               ${resource.tags.slice(0, 3).map(tag => `<span class="resource-item-tag">${tag}</span>`).join('')}
             </div>
