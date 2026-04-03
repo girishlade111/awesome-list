@@ -134,13 +134,13 @@ const topAuthors = Object.entries(authorCounts)
       </div>
       <div class="tutorials-grid">
         {featuredTutorials.map((tutorial) => (
-          <a href={tutorial.url} class="tutorial-card card">
+          <a href={`/learn/${tutorial.id}`} class="tutorial-card card">
             <div class="tutorial-header">
-              <span class={`badge badge-${tutorial.difficulty}`}>{tutorial.difficulty}</span>
-              <span class="duration">{tutorial.duration}</span>
+              <span class={`badge badge-${tutorial.data.difficulty}`}>{tutorial.data.difficulty}</span>
+              <span class="duration">{tutorial.data.duration}</span>
             </div>
-            <h3>{tutorial.title}</h3>
-            <p>{tutorial.description}</p>
+            <h3>{tutorial.data.title}</h3>
+            <p>{tutorial.data.description}</p>
           </a>
         ))}
       </div>
