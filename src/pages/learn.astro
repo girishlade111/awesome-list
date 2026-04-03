@@ -1,11 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import resourcesData from '../data/resources.json';
+import { getCollection } from 'astro:content';
 import { difficulties } from '../types';
 
-const tutorials = resourcesData.tutorials;
+const tutorials = await getCollection('tutorials');
+
 const categories = [
   { id: 'getting-started', label: 'Getting Started', icon: '🚀' },
+  { id: 'tutorials', label: 'Tutorials', icon: '📚' },
   { id: 'advanced', label: 'Advanced', icon: '⚡' },
   { id: 'integration', label: 'Integrations', icon: '🔗' }
 ];
@@ -31,7 +33,7 @@ const categories = [
       </div>
 
       {categories.map(cat => {
-        const catTutorials = tutorials.filter(t => t.category === cat.id);
+        const catTutorials = tutorials.filter(t => t.data.category === cat.id);
         if (catTutorials.length === 0) return null;
         return (
           <div class="tutorial-section" id={cat.id}>
@@ -40,22 +42,23 @@ const categories = [
               {cat.label}
             </h2>
             <div class="tutorials-grid">
-              {catTutorials.map(tutorial => (
-                <a href={tutorial.url} class="tutorial-card card">
-                  <div class="tutorial-header">
-                    <span class={`badge badge-${tutorial.difficulty}`}>{tutorial.difficulty}</span>
-                    <span class="duration">{tutorial.duration}</span>
-                  </div>
-                  <h3>{tutorial.title}</h3>
-                  <p>{tutorial.description}</p>
-                  {tutorial.author && (
-                    <div class="tutorial-footer">
-                      <span class="author">by {tutorial.author}</span>
-                      <span class="start-btn">Start →</span>
+              {catTutorials.map(tutorial => {
+                const difficultyInfo = difficulties.find(d => d.id === tutorial.data.difficulty);
+                return (
+                  <a href={`/learn/${tutorial.id}`} class="tutorial-card card">
+                    <div class="tutorial-header">
+                      <span class={`badge badge-${tutorial.data.difficulty}`}>{difficultyInfo?.label}</span>
+                      <span class="duration">{tutorial.data.duration}</span>
                     </div>
-                  )}
-                </a>
-              ))}
+                    <h3>{tutorial.data.title}</h3>
+                    <p>{tutorial.data.description}</p>
+                    <div class="tutorial-footer">
+                      <span class="author">by {tutorial.data.author}</span>
+                      <span class="start-btn">Read →</span>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           </div>
         );
