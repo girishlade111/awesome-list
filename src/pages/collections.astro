@@ -1,0 +1,171 @@
+---
+import Layout from '../layouts/Layout.astro';
+import collectionsData from '../data/collections.json';
+import resourcesData from '../data/resources.json';
+
+const { collections } = collectionsData;
+---
+
+<Layout title="Collections" description="Explore curated collections of tools and resources for specific use cases.">
+  <section class="collections-hero">
+    <div class="container">
+      <h1>Curated Collections</h1>
+      <p>Hand-picked resources grouped by purpose to help you build better.</p>
+    </div>
+  </section>
+
+  <section class="collections-grid section">
+    <div class="container">
+      <div class="grid">
+        {collections.map(collection => (
+          <div class="collection-card card" style={`--accent-color: ${collection.color}`}>
+            <div class="collection-header">
+              <span class="collection-icon">{collection.icon}</span>
+              <div class="collection-info">
+                <h3>{collection.title}</h3>
+                <p>{collection.description}</p>
+              </div>
+            </div>
+            
+            <div class="collection-resources">
+              <h4 class="resources-title">Featured Resources ({collection.resourceIds.length})</h4>
+              <ul class="resources-list">
+                {collection.resourceIds.map(id => {
+                  const resource = resourcesData.resources.find(r => r.id === id);
+                  if (!resource) return null;
+                  return (
+                    <li>
+                      <a href={`/resource/${resource.id}`} class="resource-link">
+                        <span class="dot"></span>
+                        {resource.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            
+            <div class="collection-footer">
+              <a href={`/browse?collection=${collection.id}`} class="btn btn-secondary btn-full">
+                Explore Collection
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .collections-hero {
+    padding: 80px 0 40px;
+    text-align: center;
+    background: 
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(139, 92, 246, 0.1), transparent);
+  }
+
+  .collections-hero h1 {
+    margin-bottom: 12px;
+  }
+
+  .collections-hero p {
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 32px;
+  }
+
+  .collection-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    border-top: 4px solid var(--accent-color);
+  }
+
+  .collection-header {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .collection-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+  }
+
+  .collection-info h3 {
+    font-size: 1.25rem;
+    margin-bottom: 8px;
+  }
+
+  .collection-info p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .resources-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .resources-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .resource-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+  }
+
+  .resource-link:hover {
+    color: var(--primary);
+    transform: translateX(4px);
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 50%;
+  }
+
+  .btn-full {
+    width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .collection-header {
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+</style>
