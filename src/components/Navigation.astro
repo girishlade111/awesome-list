@@ -1,62 +1,90 @@
 ---
+import GlobalSearch from './GlobalSearch.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
 const currentPath = Astro.url.pathname;
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/browse', label: 'Browse' },
   { href: '/learn', label: 'Learn' },
-  { href: '/submit', label: 'Submit' },
+  { href: '/collections', label: 'Collections' },
 ];
 ---
 
 <header class="nav-header">
   <nav class="nav-container container">
-    <a href="/" class="nav-logo">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="32" height="32" rx="8" fill="url(#logo-gradient)"/>
-        <path d="M10 12L16 8L22 12V20L16 24L10 20V12Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M16 8V24" stroke="white" stroke-width="2"/>
-        <path d="M10 12L22 20" stroke="white" stroke-width="2"/>
-        <path d="M22 12L10 20" stroke="white" stroke-width="2"/>
-        <defs>
-          <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
-            <stop stop-color="#6366f1"/>
-            <stop offset="1" stop-color="#22d3ee"/>
-          </linearGradient>
-        </defs>
-      </svg>
-      <span>DevHub</span>
-    </a>
-    
-    <button class="mobile-toggle" aria-label="Toggle menu" id="menu-toggle">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      </svg>
-    </button>
+    <div class="nav-left">
+      <a href="/" class="nav-logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="var(--primary)" />
+          <path d="M8 12L16 8L24 12V20L16 24L8 20V12Z" stroke="white" stroke-width="2" fill="none" />
+          <circle cx="16" cy="16" r="3" fill="white" />
+        </svg>
+        <span>DevHub</span>
+      </a>
+      
+      <ul class="nav-links">
+        {navLinks.map(link => (
+          <li>
+            <a 
+              href={link.href} 
+              class:list={['nav-link', { active: currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href)) }]}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
 
-    <ul class="nav-links" id="nav-links">
+    <div class="nav-right">
+      <GlobalSearch />
+      <ThemeToggle />
+      <a href="/submit" class="btn btn-primary btn-sm hide-mobile">Submit</a>
+      
+      <button class="mobile-toggle" aria-label="Toggle menu" id="menu-toggle">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+  
+  <div class="mobile-menu" id="mobile-menu">
+    <ul class="mobile-nav-links">
       {navLinks.map(link => (
         <li>
           <a 
             href={link.href} 
-            class:list={['nav-link', { active: currentPath === link.href }]}
+            class:list={['mobile-nav-link', { active: currentPath === link.href }]}
           >
             {link.label}
           </a>
         </li>
       ))}
+      <li><a href="/submit" class="mobile-nav-link">Submit Resource</a></li>
     </ul>
-  </nav>
+  </div>
 </header>
 
 <script>
   const toggle = document.getElementById('menu-toggle');
-  const links = document.getElementById('nav-links');
+  const mobileMenu = document.getElementById('mobile-menu');
   
   toggle?.addEventListener('click', () => {
-    links?.classList.toggle('open');
+    mobileMenu?.classList.toggle('open');
+    toggle.classList.toggle('active');
+  });
+
+  // Close mobile menu on click outside
+  document.addEventListener('click', (e) => {
+    if (mobileMenu?.classList.contains('open') && !mobileMenu.contains(e.target as Node) && !toggle?.contains(e.target as Node)) {
+      mobileMenu.classList.remove('open');
+      toggle?.classList.remove('active');
+    }
   });
 </script>
 
@@ -79,6 +107,12 @@ const navLinks = [
     height: 72px;
   }
 
+  .nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
   .nav-logo {
     display: flex;
     align-items: center;
@@ -90,7 +124,7 @@ const navLinks = [
   }
 
   .nav-logo:hover {
-    color: var(--text-primary);
+    color: var(--primary);
   }
 
   .nav-links {
@@ -106,6 +140,7 @@ const navLinks = [
     color: var(--text-secondary);
     font-weight: 500;
     transition: all 0.2s ease;
+    font-size: 0.9375rem;
   }
 
   .nav-link:hover {
@@ -118,38 +153,80 @@ const navLinks = [
     background: rgba(99, 102, 241, 0.1);
   }
 
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+
   .mobile-toggle {
     display: none;
     padding: 8px;
     color: var(--text-primary);
   }
 
-  @media (max-width: 640px) {
+  .mobile-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    transform: translateY(-10px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu.open {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .mobile-nav-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .mobile-nav-link {
+    display: block;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .mobile-nav-link.active {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+  }
+
+  @media (max-width: 1024px) {
+    .nav-links {
+      display: none;
+    }
+    
     .mobile-toggle {
       display: block;
     }
+  }
 
-    .nav-links {
+  @media (max-width: 640px) {
+    .hide-mobile {
       display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      flex-direction: column;
-      background: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px;
-      gap: 4px;
     }
-
-    .nav-links.open {
-      display: flex;
+    
+    .nav-container {
+      height: 64px;
     }
-
-    .nav-link {
-      width: 100%;
-      text-align: center;
-      padding: 12px;
+    
+    .nav-left {
+      gap: 12px;
     }
   }
 </style>
