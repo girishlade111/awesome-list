@@ -1,4 +1,4 @@
-# Awesome List - Developer Resources Hub
+# Awesome Toolbox - Developer Resources Hub
 
 A community-driven collection of resources for developers, featuring AI agents, prompts, instructions, plugins, and workflows.
 
@@ -22,8 +22,8 @@ A community-driven collection of resources for developers, featuring AI agents, 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/girishlade111/awesome-list.git
-   cd awesome-list
+   git clone https://github.com/girishlade111/awesome-toolbox.git
+   cd awesome-toolbox
    ```
 
 2. **Install dependencies:**
@@ -112,7 +112,7 @@ The site is configured to deploy automatically to GitHub Pages via GitHub Action
 2. Enable GitHub Pages in repository settings (select "GitHub Actions")
 3. The workflow will deploy automatically
 
-Live site: https://girishlade111.github.io/awesome-list/
+Live site: https://girishlade111.github.io/awesome-toolbox/
 
 ## License
 

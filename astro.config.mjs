@@ -5,7 +5,7 @@ import mdx from '@astrojs/mdx';
 
 export default defineConfig({
   site: 'https://girishlade111.github.io',
-  base: '/awesome-list',
+  base: '/awesome-toolbox',
   output: 'static',
   build: {
     format: 'file'
