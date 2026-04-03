@@ -1,0 +1,419 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const steps = [
+  {
+    number: 1,
+    title: 'Fork the Repository',
+    description: 'Start by forking the DevHub repository on GitHub to your own account.',
+    action: 'Fork on GitHub',
+    actionUrl: 'https://github.com',
+    icon: '🍴'
+  },
+  {
+    number: 2,
+    title: 'Create Your Resource File',
+    description: 'Add a new Markdown file in the appropriate directory (e.g., `src/content/resources/` for resources or `src/content/tutorials/` for tutorials).',
+    icon: '📝'
+  },
+  {
+    number: 3,
+    title: 'Follow the Schema',
+    description: 'Ensure your file includes all required frontmatter fields: title, description, category, tags, author, and URL.',
+    icon: '✅'
+  },
+  {
+    number: 4,
+    title: 'Test Locally',
+    description: 'Run `npm run dev` to preview your changes locally before submitting.',
+    code: 'npm run dev',
+    icon: '🧪'
+  },
+  {
+    number: 5,
+    title: 'Submit a Pull Request',
+    description: 'Push your changes and open a pull request. We\'ll review and merge it!',
+    action: 'View Guidelines',
+    actionUrl: 'https://github.com',
+    icon: '🚀'
+  }
+];
+
+const guidelines = [
+  {
+    title: 'Resource Submissions',
+    items: [
+      'Must be a working tool, script, or template',
+      'Include a clear, descriptive title and summary',
+      'Add relevant tags for discoverability',
+      'Link to the source code or live demo',
+      'Ensure proper licensing if sharing code'
+    ]
+  },
+  {
+    title: 'Tutorial Submissions',
+    items: [
+      'Write in Markdown with frontmatter metadata',
+      'Include code examples and explanations',
+      'Specify difficulty level and estimated duration',
+      'Test all code snippets before submitting',
+      'Keep formatting consistent with existing tutorials'
+    ]
+  },
+  {
+    title: 'General Guidelines',
+    items: [
+      'Be respectful and inclusive',
+      'No spam or self-promotion without value',
+      'Credit original authors if adapting content',
+      'Follow the project\'s code of conduct',
+      'Respond to review feedback constructively'
+    ]
+  }
+];
+
+const faqs = [
+  {
+    question: 'How long does it take for my contribution to be published?',
+    answer: 'We aim to review all pull requests within 48 hours. Simple additions are often merged within 24 hours.'
+  },
+  {
+    question: 'Can I submit multiple resources at once?',
+    answer: 'Yes! You can submit multiple resources. Please create a separate pull request for each resource to make review easier.'
+  },
+  {
+    question: 'What if my resource isn\'t ready yet?',
+    answer: 'You can open a draft pull request and mark it as a work in progress. We\'re happy to provide feedback during development.'
+  },
+  {
+    question: 'Can I update or remove my resource later?',
+    answer: 'Absolutely. Just open a new pull request with your changes or removal request.'
+  }
+];
+---
+
+<Layout 
+  title="Contribute"
+  description="Learn how to contribute your resources, tutorials, and expertise to the DevHub community."
+>
+  <section class="contribute-hero">
+    <div class="container">
+      <h1>Contribute to DevHub</h1>
+      <p>Share your expertise and help build the ultimate resource directory for developers.</p>
+      <div class="hero-actions">
+        <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          Fork Repository
+        </a>
+        <a href="https://github.com/issues" target="_blank" rel="noopener" class="btn btn-secondary">
+          Suggest via Issue
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps-section section">
+    <div class="container">
+      <h2 class="section-title">How to Contribute</h2>
+      <div class="steps-grid">
+        {steps.map(step => (
+          <div class="step-card">
+            <div class="step-header">
+              <span class="step-icon">{step.icon}</span>
+              <span class="step-number">{step.number}</span>
+            </div>
+            <h3>{step.title}</h3>
+            <p>{step.description}</p>
+            {step.code && <pre class="code-block"><code>{step.code}</code></pre>}
+            {step.action && (
+              <a href={step.actionUrl} target="_blank" rel="noopener" class="step-action">
+                {step.action} →
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="guidelines-section section">
+    <div class="container">
+      <h2 class="section-title">Contribution Guidelines</h2>
+      <div class="guidelines-grid">
+        {guidelines.map(guideline => (
+          <div class="guideline-card">
+            <h3>{guideline.title}</h3>
+            <ul>
+              {guideline.items.map(item => (
+                <li>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section section">
+    <div class="container">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <div class="faq-grid">
+        {faqs.map(faq => (
+          <div class="faq-item">
+            <h3>{faq.question}</h3>
+            <p>{faq.answer}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Ready to contribute?</h2>
+        <p>Join hundreds of developers who are already sharing their knowledge with the community.</p>
+        <a href="https://github.com" target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+          Get Started on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .contribute-hero {
+    padding: 80px 0 40px;
+    text-align: center;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(16, 185, 129, 0.1), transparent);
+  }
+
+  .contribute-hero h1 {
+    margin-bottom: 16px;
+  }
+
+  .contribute-hero p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-bottom: 32px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .section-title {
+    margin-bottom: 48px;
+    text-align: center;
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .step-card {
+    padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+  }
+
+  .step-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .step-icon {
+    font-size: 2rem;
+  }
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--primary);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+
+  .step-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: 8px;
+  }
+
+  .step-card p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+  }
+
+  .code-block {
+    padding: 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+
+  .code-block code {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--accent);
+  }
+
+  .step-action {
+    color: var(--primary);
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .step-action:hover {
+    color: var(--primary-hover);
+  }
+
+  .guidelines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+  }
+
+  .guideline-card {
+    padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .guideline-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .guideline-card ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .guideline-card li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+  }
+
+  .guideline-card li svg {
+    flex-shrink: 0;
+    margin-top: 4px;
+    color: var(--success);
+  }
+
+  .faq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+  }
+
+  .faq-item {
+    padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .faq-item h3 {
+    font-size: 1.0625rem;
+    margin-bottom: 12px;
+  }
+
+  .faq-item p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .cta-section {
+    margin-bottom: 80px;
+  }
+
+  .cta-box {
+    text-align: center;
+    padding: 48px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(34, 211, 238, 0.1));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+  }
+
+  .cta-box h2 {
+    margin-bottom: 12px;
+  }
+
+  .cta-box p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-lg {
+    padding: 14px 32px;
+    font-size: 1.0625rem;
+  }
+
+  @media (max-width: 640px) {
+    .steps-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .guidelines-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+    }
+
+    .hero-actions .btn {
+      width: 100%;
+    }
+
+    .cta-box {
+      padding: 32px 24px;
+    }
+  }
+</style>
