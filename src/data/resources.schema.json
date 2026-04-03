@@ -26,7 +26,7 @@
           },
           "category": {
             "type": "string",
-            "enum": ["agent", "prompt", "instruction", "plugin"]
+            "enum": ["agent", "prompt", "instruction", "plugin", "workflow"]
           },
           "author": {
             "type": "string"
