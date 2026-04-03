@@ -3,10 +3,9 @@ import Layout from '../../layouts/BaseLayout.astro';
 import resourcesData from '../../data/resources.json';
 import { difficulties } from '../../types';
 
-// Use tutorials from resources.json for now
-const tutorials = resourcesData.tutorials || [];
-
 export function getStaticPaths() {
+  // Use tutorials from resources.json for now
+  const tutorials = resourcesData.tutorials || [];
   return tutorials.map((tutorial) => ({
     params: { id: tutorial.id },
     props: { tutorial },
@@ -14,14 +13,14 @@ export function getStaticPaths() {
 }
 
 interface Props {
-  tutorial: typeof tutorials[0];
+  tutorial: typeof resourcesData.tutorials[0];
 }
 
 const { tutorial } = Astro.props;
 const difficultyInfo = difficulties.find(d => d.id === tutorial.difficulty);
 
 // Get related tutorials (same category, excluding current)
-const relatedTutorials = tutorials
+const relatedTutorials = resourcesData.tutorials
   .filter(t => t.category === tutorial.category && t.id !== tutorial.id)
   .slice(0, 3);
 
