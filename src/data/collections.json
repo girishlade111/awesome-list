@@ -1,0 +1,55 @@
+{
+  "collections": [
+    {
+      "id": "ai-coding-assistants",
+      "title": "AI Coding Assistants",
+      "description": "AI-powered agents that help write, review, and refactor code",
+      "icon": "🤖",
+      "color": "#6366f1",
+      "resourceIds": ["code-review-agent", "refactoring-assistant"],
+      "featured": true
+    },
+    {
+      "id": "security-tools",
+      "title": "Security & Safety",
+      "description": "Tools to keep your codebase secure and scan for vulnerabilities",
+      "icon": "🔒",
+      "color": "#10b981",
+      "resourceIds": ["security-scanner-plugin"],
+      "featured": true
+    },
+    {
+      "id": "devops-automation",
+      "title": "DevOps & Automation",
+      "description": "Scripts, tools, and instructions for automating your workflow",
+      "icon": "⚙️",
+      "color": "#f59e0b",
+      "resourceIds": ["git-hooks-instructions", "docker-setup-instructions"]
+    },
+    {
+      "id": "prompt-engineering",
+      "title": "Prompt Engineering",
+      "description": "Optimized prompts to get the best results from AI models",
+      "icon": "💬",
+      "color": "#22d3ee",
+      "resourceIds": ["system-prompt-engineer", "test-generator-prompt"],
+      "featured": true
+    },
+    {
+      "id": "testing-tools",
+      "title": "Testing & Quality",
+      "description": "Tools and prompts for writing comprehensive tests",
+      "icon": "✅",
+      "color": "#8b5cf6",
+      "resourceIds": ["test-generator-prompt"]
+    },
+    {
+      "id": "documentation",
+      "title": "Documentation Tools",
+      "description": "Generate and maintain documentation effortlessly",
+      "icon": "📚",
+      "color": "#ec4899",
+      "resourceIds": ["documentation-generator"]
+    }
+  ]
+}
