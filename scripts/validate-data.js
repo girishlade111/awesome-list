@@ -32,7 +32,7 @@ async function validate() {
           errors.push(`Resource [${i}] (${r.id}): ID must be kebab-case (a-z, 0-9, -)`);
         }
         
-        if (r.category && !['agent', 'prompt', 'instruction', 'plugin'].includes(r.category)) {
+        if (r.category && !['agent', 'prompt', 'instruction', 'plugin', 'workflow'].includes(r.category)) {
           errors.push(`Resource [${i}] (${r.id}): Invalid category "${r.category}"`);
         }
         
