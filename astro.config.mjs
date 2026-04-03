@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import mdx from '@astrojs/mdx';
 
 export default defineConfig({
   // UPDATE THESE VALUES FOR YOUR REPO:
@@ -12,5 +13,11 @@ export default defineConfig({
   build: {
     format: 'file'
   },
-  integrations: [sitemap()]
+  integrations: [mdx(), sitemap()],
+  markdown: {
+    shikiConfig: {
+      theme: 'github-dark',
+      wrap: true,
+    },
+  },
 });

@@ -1,10 +1,12 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from '../../layouts/BaseLayout.astro';
+import resourcesData from '../../data/resources.json';
 import { difficulties } from '../../types';
-import { getCollection } from 'astro:content';
 
-export async function getStaticPaths() {
-  const tutorials = await getCollection('tutorials');
+// Use tutorials from resources.json for now
+const tutorials = resourcesData.tutorials || [];
+
+export function getStaticPaths() {
   return tutorials.map((tutorial) => ({
     params: { id: tutorial.id },
     props: { tutorial },
@@ -12,24 +14,23 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  tutorial: any;
+  tutorial: typeof tutorials[0];
 }
 
 const { tutorial } = Astro.props;
-const difficultyInfo = difficulties.find(d => d.id === tutorial.data.difficulty);
+const difficultyInfo = difficulties.find(d => d.id === tutorial.difficulty);
 
 // Get related tutorials (same category, excluding current)
-const allTutorials = await getCollection('tutorials');
-const relatedTutorials = allTutorials
-  .filter(t => t.data.category === tutorial.data.category && t.id !== tutorial.id)
+const relatedTutorials = tutorials
+  .filter(t => t.category === tutorial.category && t.id !== tutorial.id)
   .slice(0, 3);
 
 const url = `https://yourusername.github.io/devhub/learn/${tutorial.id}`;
-const ogDescription = tutorial.data.description;
-const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
+const ogDescription = tutorial.description;
+const ogTitle = `${tutorial.title} | DevHub Learning Hub`;
 ---
 
-<Layout title={tutorial.data.title} description={ogDescription}>
+<Layout title={ogTitle} description={ogDescription}>
   <article class="tutorial-detail">
     <div class="container">
       <nav class="breadcrumb">
@@ -37,12 +38,12 @@ const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
         <span class="separator">/</span>
         <a href="/learn">Learning Hub</a>
         <span class="separator">/</span>
-        <span class="current">{tutorial.data.title}</span>
+        <span class="current">{tutorial.title}</span>
       </nav>
 
       <div class="tutorial-header">
         <div class="tutorial-meta">
-          <span class={`badge badge-${tutorial.data.difficulty}`}>
+          <span class={`badge badge-${tutorial.difficulty}`}>
             {difficultyInfo?.label}
           </span>
           <span class="duration">
@@ -50,21 +51,21 @@ const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
               <circle cx="12" cy="12" r="10"/>
               <path d="M12 6v6l4 2"/>
             </svg>
-            {tutorial.data.duration}
+            {tutorial.duration}
           </span>
           <span class="category-badge">
-            {tutorial.data.category.replace('-', ' ')}
+            {tutorial.category.replace('-', ' ')}
           </span>
         </div>
-        <h1>{tutorial.data.title}</h1>
-        <p class="tutorial-description">{tutorial.data.description}</p>
+        <h1>{tutorial.title}</h1>
+        <p class="tutorial-description">{tutorial.description}</p>
         
         <div class="tutorial-actions">
           <div class="author-info">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
-            <span>By <strong>{tutorial.data.author}</strong></span>
+            <span>By <strong>{tutorial.author}</strong></span>
           </div>
           <button class="btn btn-secondary share-btn" data-url={url}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -81,9 +82,7 @@ const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
 
       <div class="tutorial-content">
         <div class="content-wrapper">
-          <slot name="content">
-            {tutorial.render()}
-          </slot>
+          <p>Full tutorial content will be displayed here.</p>
         </div>
       </div>
 
@@ -92,15 +91,15 @@ const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
           <h2>Related Tutorials</h2>
           <div class="related-grid">
             {relatedTutorials.map(related => {
-              const relatedDifficulty = difficulties.find(d => d.id === related.data.difficulty);
+              const relatedDifficulty = difficulties.find(d => d.id === related.difficulty);
               return (
                 <a href={`/learn/${related.id}`} class="related-card">
-                  <span class={`badge badge-${related.data.difficulty}`}>
+                  <span class={`badge badge-${related.difficulty}`}>
                     {relatedDifficulty?.label}
                   </span>
-                  <h3>{related.data.title}</h3>
-                  <p>{related.data.description}</p>
-                  <span class="related-meta">{related.data.duration} • by {related.data.author}</span>
+                  <h3>{related.title}</h3>
+                  <p>{related.description}</p>
+                  <span class="related-meta">{related.duration} • by {related.author}</span>
                 </a>
               );
             })}
@@ -254,87 +253,6 @@ const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
     background: var(--bg-surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-  }
-
-  .content-wrapper :global(h2) {
-    margin-top: 32px;
-    margin-bottom: 16px;
-    font-size: 1.5rem;
-  }
-
-  .content-wrapper :global(h3) {
-    margin-top: 24px;
-    margin-bottom: 12px;
-    font-size: 1.25rem;
-  }
-
-  .content-wrapper :global(p) {
-    margin-bottom: 16px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-  }
-
-  .content-wrapper :global(ul), .content-wrapper :global(ol) {
-    margin-bottom: 16px;
-    padding-left: 24px;
-  }
-
-  .content-wrapper :global(li) {
-    margin-bottom: 8px;
-    color: var(--text-secondary);
-  }
-
-  .content-wrapper :global(code) {
-    padding: 2px 6px;
-    background: var(--bg-elevated);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: var(--accent);
-  }
-
-  .content-wrapper :global(pre) {
-    padding: 20px;
-    background: var(--bg-deep);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow-x: auto;
-    margin-bottom: 16px;
-  }
-
-  .content-wrapper :global(pre code) {
-    background: none;
-    padding: 0;
-    color: var(--text-primary);
-  }
-
-  .content-wrapper :global(blockquote) {
-    border-left: 4px solid var(--primary);
-    padding-left: 20px;
-    margin: 24px 0;
-    color: var(--text-secondary);
-    font-style: italic;
-  }
-
-  .content-wrapper :global(hr) {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 32px 0;
-  }
-
-  .content-wrapper :global(a) {
-    color: var(--primary);
-    text-decoration: underline;
-  }
-
-  .content-wrapper :global(a:hover) {
-    color: var(--primary-hover);
-  }
-
-  .content-wrapper :global(img) {
-    max-width: 100%;
-    border-radius: var(--radius-md);
-    margin: 16px 0;
   }
 
   .related-section {
