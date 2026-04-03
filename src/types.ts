@@ -2,12 +2,15 @@ export interface Resource {
   id: string;
   title: string;
   description: string;
-  category: 'agent' | 'prompt' | 'instruction' | 'plugin';
+  category: 'agent' | 'prompt' | 'instruction' | 'plugin' | 'workflow';
   author: string;
   authorUrl: string;
   tags: string[];
   url: string;
+  github?: string;
   addedAt: string;
+  stars?: number;
+  featured?: boolean;
 }
 
 export interface Tutorial {
@@ -16,7 +19,7 @@ export interface Tutorial {
   description: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: string;
-  category: 'getting-started' | 'advanced' | 'integration';
+  category: 'getting-started' | 'advanced' | 'best-practices' | 'case-studies' | 'tutorials' | 'integration';
   url: string;
   author?: string;
 }
@@ -38,11 +41,14 @@ export interface Author {
   joinedAt: string;
 }
 
+export type SortOption = 'newest' | 'oldest' | 'alpha' | 'alpha-desc' | 'popular';
+
 export const categories = [
   { id: 'agent', label: 'Agents', icon: '🤖' },
   { id: 'prompt', label: 'Prompts', icon: '💬' },
   { id: 'instruction', label: 'Instructions', icon: '📋' },
-  { id: 'plugin', label: 'Plugins', icon: '🔌' }
+  { id: 'plugin', label: 'Plugins', icon: '🔌' },
+  { id: 'workflow', label: 'Workflows', icon: '⚡' }
 ] as const;
 
 export const difficulties = [
