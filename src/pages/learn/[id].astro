@@ -1,0 +1,502 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { difficulties } from '../../types';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const tutorials = await getCollection('tutorials');
+  return tutorials.map((tutorial) => ({
+    params: { id: tutorial.id },
+    props: { tutorial },
+  }));
+}
+
+interface Props {
+  tutorial: any;
+}
+
+const { tutorial } = Astro.props;
+const difficultyInfo = difficulties.find(d => d.id === tutorial.data.difficulty);
+
+// Get related tutorials (same category, excluding current)
+const allTutorials = await getCollection('tutorials');
+const relatedTutorials = allTutorials
+  .filter(t => t.data.category === tutorial.data.category && t.id !== tutorial.id)
+  .slice(0, 3);
+
+const url = `https://yourusername.github.io/devhub/learn/${tutorial.id}`;
+const ogDescription = tutorial.data.description;
+const ogTitle = `${tutorial.data.title} | DevHub Learning Hub`;
+---
+
+<Layout title={tutorial.data.title} description={ogDescription}>
+  <article class="tutorial-detail">
+    <div class="container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="separator">/</span>
+        <a href="/learn">Learning Hub</a>
+        <span class="separator">/</span>
+        <span class="current">{tutorial.data.title}</span>
+      </nav>
+
+      <div class="tutorial-header">
+        <div class="tutorial-meta">
+          <span class={`badge badge-${tutorial.data.difficulty}`}>
+            {difficultyInfo?.label}
+          </span>
+          <span class="duration">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            {tutorial.data.duration}
+          </span>
+          <span class="category-badge">
+            {tutorial.data.category.replace('-', ' ')}
+          </span>
+        </div>
+        <h1>{tutorial.data.title}</h1>
+        <p class="tutorial-description">{tutorial.data.description}</p>
+        
+        <div class="tutorial-actions">
+          <div class="author-info">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span>By <strong>{tutorial.data.author}</strong></span>
+          </div>
+          <button class="btn btn-secondary share-btn" data-url={url}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Share
+          </button>
+        </div>
+      </div>
+
+      <div class="tutorial-content">
+        <div class="content-wrapper">
+          <slot name="content">
+            {tutorial.render()}
+          </slot>
+        </div>
+      </div>
+
+      {relatedTutorials.length > 0 && (
+        <div class="related-section">
+          <h2>Related Tutorials</h2>
+          <div class="related-grid">
+            {relatedTutorials.map(related => {
+              const relatedDifficulty = difficulties.find(d => d.id === related.data.difficulty);
+              return (
+                <a href={`/learn/${related.id}`} class="related-card">
+                  <span class={`badge badge-${related.data.difficulty}`}>
+                    {relatedDifficulty?.label}
+                  </span>
+                  <h3>{related.data.title}</h3>
+                  <p>{related.data.description}</p>
+                  <span class="related-meta">{related.data.duration} • by {related.data.author}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div class="contribute-cta">
+        <h3>Want to contribute a tutorial?</h3>
+        <p>Share your knowledge with the community by submitting your own tutorials.</p>
+        <a href="/submit" class="btn btn-primary">Submit Tutorial</a>
+      </div>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .tutorial-detail {
+    padding-top: 72px;
+    min-height: 100vh;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .breadcrumb a {
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--primary);
+  }
+
+  .breadcrumb .separator {
+    color: var(--text-muted);
+  }
+
+  .breadcrumb .current {
+    color: var(--text-primary);
+  }
+
+  .tutorial-header {
+    max-width: 800px;
+    margin-bottom: 48px;
+  }
+
+  .tutorial-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .category-badge {
+    padding: 4px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+  }
+
+  .tutorial-header h1 {
+    margin-bottom: 16px;
+  }
+
+  .tutorial-description {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .tutorial-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+  }
+
+  .author-info svg {
+    color: var(--text-muted);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .btn-secondary {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .tutorial-content {
+    max-width: 800px;
+    margin-bottom: 64px;
+  }
+
+  .content-wrapper {
+    padding: 32px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .content-wrapper :global(h2) {
+    margin-top: 32px;
+    margin-bottom: 16px;
+    font-size: 1.5rem;
+  }
+
+  .content-wrapper :global(h3) {
+    margin-top: 24px;
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+  }
+
+  .content-wrapper :global(p) {
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .content-wrapper :global(ul), .content-wrapper :global(ol) {
+    margin-bottom: 16px;
+    padding-left: 24px;
+  }
+
+  .content-wrapper :global(li) {
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+  }
+
+  .content-wrapper :global(code) {
+    padding: 2px 6px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--accent);
+  }
+
+  .content-wrapper :global(pre) {
+    padding: 20px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+
+  .content-wrapper :global(pre code) {
+    background: none;
+    padding: 0;
+    color: var(--text-primary);
+  }
+
+  .content-wrapper :global(blockquote) {
+    border-left: 4px solid var(--primary);
+    padding-left: 20px;
+    margin: 24px 0;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .content-wrapper :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  .content-wrapper :global(a) {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  .content-wrapper :global(a:hover) {
+    color: var(--primary-hover);
+  }
+
+  .content-wrapper :global(img) {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    margin: 16px 0;
+  }
+
+  .related-section {
+    margin-bottom: 64px;
+  }
+
+  .related-section h2 {
+    margin-bottom: 32px;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .related-card {
+    display: block;
+    padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .related-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-glow);
+    color: inherit;
+  }
+
+  .related-card .badge {
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .related-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: 8px;
+  }
+
+  .related-card p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+  }
+
+  .related-meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .contribute-cta {
+    text-align: center;
+    padding: 48px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(34, 211, 238, 0.1));
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+  }
+
+  .contribute-cta h3 {
+    margin-bottom: 12px;
+  }
+
+  .contribute-cta p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .share-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 24px;
+    background: var(--success);
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .tutorial-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .content-wrapper {
+      padding: 24px;
+    }
+
+    .contribute-cta {
+      padding: 32px 24px;
+    }
+  }
+</style>
+
+<script>
+  // Share functionality
+  const shareBtn = document.querySelector('.share-btn');
+  
+  shareBtn?.addEventListener('click', async () => {
+    const url = shareBtn.dataset.url;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: document.querySelector('h1')?.textContent,
+          url: url
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard!');
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    }
+  });
+
+  function showToast(message: string) {
+    const existing = document.querySelector('.share-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'share-toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
+</script>
