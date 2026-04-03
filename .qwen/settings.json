@@ -3,7 +3,8 @@
     "allow": [
       "Bash(findstr *)",
       "Bash(npx *)",
-      "Bash(dir *)"
+      "Bash(dir *)",
+      "Bash(npm install *)"
     ]
   },
   "$version": 3
