@@ -1,0 +1,265 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="DevHub - A community-driven collection of resources for developers" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} | DevHub</title>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container navbar-inner">
+        <a href="/" class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="var(--primary)" />
+            <path d="M8 12L16 8L24 12V20L16 24L8 20V12Z" stroke="white" stroke-width="2" fill="none" />
+            <circle cx="16" cy="16" r="3" fill="white" />
+          </svg>
+          <span>DevHub</span>
+        </a>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/browse" class="nav-link">Browse</a>
+          <a href="/learn" class="nav-link">Learn</a>
+          <a href="/submit" class="btn btn-primary btn-sm">Submit</a>
+        </div>
+        <button class="mobile-menu-btn" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </nav>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <a href="/" class="logo">
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="var(--primary)" />
+                <path d="M8 12L16 8L24 12V20L16 24L8 20V12Z" stroke="white" stroke-width="2" fill="none" />
+                <circle cx="16" cy="16" r="3" fill="white" />
+              </svg>
+              <span>DevHub</span>
+            </a>
+            <p>Community-driven resources for developers</p>
+          </div>
+          <div class="footer-links">
+            <a href="/browse">Browse Resources</a>
+            <a href="/learn">Learning Hub</a>
+            <a href="/submit">Contribute</a>
+            <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>Built with Astro. Deployed on GitHub Pages.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      const navLinks = document.querySelector('.nav-links');
+      menuBtn?.addEventListener('click', () => {
+        navLinks?.classList.toggle('active');
+        menuBtn.classList.toggle('active');
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+
+  .logo:hover {
+    color: var(--primary);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .nav-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+  }
+
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .mobile-menu-btn span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-menu-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .mobile-menu-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+  }
+
+  main {
+    padding-top: 72px;
+    min-height: calc(100vh - 200px);
+  }
+
+  .footer {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    padding: 48px 0 24px;
+    margin-top: 80px;
+  }
+
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  .footer-brand {
+    max-width: 300px;
+  }
+
+  .footer-brand .logo {
+    margin-bottom: 12px;
+  }
+
+  .footer-brand p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .footer-links a:hover {
+    color: var(--primary);
+  }
+
+  .footer-bottom {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .footer-bottom p {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+      position: absolute;
+      top: 72px;
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      flex-direction: column;
+      padding: 24px;
+      gap: 16px;
+    }
+
+    .nav-links.active {
+      display: flex;
+    }
+
+    .mobile-menu-btn {
+      display: flex;
+    }
+
+    .footer-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .footer-brand {
+      max-width: 100%;
+    }
+
+    .footer-links {
+      justify-content: center;
+    }
+  }
+</style>
