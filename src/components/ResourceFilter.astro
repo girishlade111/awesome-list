@@ -53,6 +53,7 @@ const { resources } = Astro.props;
         <option value="oldest">Oldest first</option>
         <option value="alpha">Alphabetical (A-Z)</option>
         <option value="alpha-desc">Alphabetical (Z-A)</option>
+        <option value="popular">Most popular</option>
       </select>
     </div>
   </div>
@@ -582,7 +583,7 @@ const { resources } = Astro.props;
 
   function sortResources(filtered: Resource[]) {
     const sorted = [...filtered];
-    
+
     switch (sortBy) {
       case 'newest':
         return sorted.sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime());
@@ -592,6 +593,8 @@ const { resources } = Astro.props;
         return sorted.sort((a, b) => a.title.localeCompare(b.title));
       case 'alpha-desc':
         return sorted.sort((a, b) => b.title.localeCompare(a.title));
+      case 'popular':
+        return sorted.sort((a, b) => (b.stars || 0) - (a.stars || 0));
       default:
         return sorted;
     }
